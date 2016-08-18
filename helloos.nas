@@ -1,11 +1,12 @@
 ; hello-os
-; TAB=4
-
 ; nasm ./helloos.nas -o ./helloos.img
+
+  ORG   0x7c00        ; このプログラムがどこから読み込まれるのか
 
 ; 以下は標準的なFAT12フォーマットフロッピーディスクのための記述
 
-  DB    0xeb, 0x4e, 0x90
+  JMP   SHORT entry
+  DB    0x90
   DB    "HELLOIPL"    ; ブートセクタの名前を自由に書いてよい（8バイト）
   DW    512           ; 1セクタの大きさ（512にしなければいけない）
   DB    1             ; クラスタの大きさ（1セクタにしなければいけない）
@@ -19,7 +20,7 @@
   DW    2             ; ヘッドの数（2にしなければいけない）
   DD    0             ; パーティションを使ってないのでここは必ず0
   DD    2880          ; このドライブ大きさをもう一度書く
-  DB    0,0,0x29      ; よくわからないけどこの値にしておくといいらしい
+  DB    0, 0, 0x29    ; よくわからないけどこの値にしておくといいらしい
   DD    0xffffffff    ; たぶんボリュームシリアル番号
   DB    "HELLO-OS   " ; ディスクの名前（11バイト）
   DB    "FAT12   "    ; フォーマットの名前（8バイト）
@@ -27,14 +28,30 @@
 
 ; プログラム本体
 
-  DB    0xb8, 0x00, 0x00, 0x8e, 0xd0, 0xbc, 0x00, 0x7c
-  DB    0x8e, 0xd8, 0x8e, 0xc0, 0xbe, 0x74, 0x7c, 0x8a
-  DB    0x04, 0x83, 0xc6, 0x01, 0x3c, 0x00, 0x74, 0x09
-  DB    0xb4, 0x0e, 0xbb, 0x0f, 0x00, 0xcd, 0x10, 0xeb
-  DB    0xee, 0xf4, 0xeb, 0xfd
+entry:
+  MOV   AX, 0         ; レジスタ初期化
+  MOV   SS, AX
+  MOV   SP, 0x7c00
+  MOV   DS, AX
+  MOV   ES, AX
 
-; メッセージ部分
+  MOV   SI, msg
 
+putloop:
+  MOV   AL, [SI]
+  ADD   SI, 1         ; SIに1を足す
+  CMP   AL, 0
+  JE    fin
+  MOV   AH, 0x0e      ; 1文字表示関数
+  MOV   BX, 15        ; カラーコード
+  INT   0x10          ; ビデオBIOS呼び出し
+  JMP   SHORT putloop
+
+fin:
+  HLT                 ; 何かあるまでCPU停止
+  JMP   SHORT fin     ; 無限ループ
+
+msg:
   DB    0x0a, 0x0a    ; 改行を2つ
   DB    "Hello, professor."
   DB    0x0d, 0x0a    ; 改行
@@ -44,7 +61,7 @@
   DB    0x0a          ; 改行
   DB    0
 
-  RESB  0x1fe-($-$$)  ; ブートセクタの残り(2バイト残した0x1feまで)を0x00で埋める命令
+  RESB  0x1fe-($-$$) ; 0x7dfeまで0x00で埋める命令
 
   DB    0x55, 0xaa    ; ブートセクタの末尾2バイトを55aaに(ブートできるように)
 

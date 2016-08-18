@@ -1,6 +1,6 @@
 #!/bin/sh
 
-qemu-system-x86_64\
+qemu-system-i386\
   -cpu host\
   -m 256M\
   -enable-kvm\
