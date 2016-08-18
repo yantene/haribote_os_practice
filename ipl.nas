@@ -1,5 +1,5 @@
 ; hello-os
-; nasm ./helloos.nas -o ./helloos.img
+; nasm ./ipl.nas -o ./ipl.bin -l ipl.lst
 
   ORG   0x7c00        ; このプログラムがどこから読み込まれるのか
 
@@ -64,10 +64,3 @@ msg:
   RESB  0x1fe-($-$$) ; 0x7dfeまで0x00で埋める命令
 
   DB    0x55, 0xaa    ; ブートセクタの末尾2バイトを55aaに(ブートできるように)
-
-; 以下はブートセクタ以外の部分の記述
-
-  DB    0xf0, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00
-  RESB  4600
-  DB    0xf0, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00
-  RESB  1469432
