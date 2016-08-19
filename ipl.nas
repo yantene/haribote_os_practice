@@ -1,5 +1,4 @@
-; hello-os
-; nasm ./ipl.nas -o ./ipl.bin -l ipl.lst
+; haribote-ipl
 
   ORG   0x7c00        ; このプログラムがどこから読み込まれるのか
 
@@ -7,7 +6,7 @@
 
   JMP   SHORT entry
   DB    0x90
-  DB    "HELLOIPL"    ; ブートセクタの名前を自由に書いてよい（8バイト）
+  DB    "HARIBOTE"    ; ブートセクタの名前を自由に書いてよい（8バイト）
   DW    512           ; 1セクタの大きさ（512にしなければいけない）
   DB    1             ; クラスタの大きさ（1セクタにしなければいけない）
   DW    1             ; FATがどこから始まるか（普通は1セクタ目からにする）
@@ -22,7 +21,7 @@
   DD    2880          ; このドライブ大きさをもう一度書く
   DB    0, 0, 0x29    ; よくわからないけどこの値にしておくといいらしい
   DD    0xffffffff    ; たぶんボリュームシリアル番号
-  DB    "HELLO-OS   " ; ディスクの名前（11バイト）
+  DB    "HARIBOTEOS " ; ディスクの名前（11バイト）
   DB    "FAT12   "    ; フォーマットの名前（8バイト）
   RESB  18            ; とりあえず18バイトあけておく
 
@@ -33,8 +32,39 @@ entry:
   MOV   SS, AX
   MOV   SP, 0x7c00
   MOV   DS, AX
-  MOV   ES, AX
 
+; ディスクを読む
+
+  MOV   AX, 0x0820
+  MOV   ES, AX
+  MOV   CH, 0         ; シリンダ番号 (外周から80分割で0〜79)
+  MOV   DH, 0         ; ヘッド番号 (表面: 0, 裏面: 1)
+  MOV   CL, 2         ; セクタ番号 (360度を18分割で1〜18, 512B)
+
+  MOV   SI, 0         ; 失敗回数
+
+retry:
+  MOV   AH, 0x02      ; ディスク読み込み
+  MOV   AL, 1         ; 1セクタ
+  MOV   BX, 0
+  MOV   DL, 0x00      ; ドライブ番号 (A ドライブ)
+  INT   0x13          ; ディスクBIOS呼び出し
+  JNC   fin           ; エラーが起きなければfin
+  ADD   SI, 1         ; SI += 1
+  CMP   SI, 5         ; SI <=> 5
+  JAE   error         ; SI >= 5: error
+  MOV   AH, 0x00
+  MOV   DL, 0x00      ; A ドライブ
+  INT   0x13          ; ドライブリセット
+  JMP   retry
+
+; 寝る
+
+fin:
+  HLT                 ; 何かあるまで寝る
+  JMP   SHORT fin     ; ループ
+
+error:
   MOV   SI, msg
 
 putloop:
@@ -47,17 +77,9 @@ putloop:
   INT   0x10          ; ビデオBIOS呼び出し
   JMP   SHORT putloop
 
-fin:
-  HLT                 ; 何かあるまでCPU停止
-  JMP   SHORT fin     ; 無限ループ
-
 msg:
   DB    0x0a, 0x0a    ; 改行を2つ
-  DB    "Hello, professor."
-  DB    0x0d, 0x0a    ; 改行
-  DB    "Remember me?"
-  DB    0x0d, 0x0a    ; 改行
-  DB    "It's me, Spector."
+  DB    "load error"
   DB    0x0a          ; 改行
   DB    0
 
