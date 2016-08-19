@@ -9,9 +9,10 @@ helloos.img: ipl.bin
 run: helloos.img
 	qemu-system-i386\
     -cpu host\
-    -m 256M\
+    -m 64M\
     -enable-kvm\
-    -drive file=$<,format=raw
+    -boot order=a\
+    -drive file=$<,format=raw,index=0,if=floppy
 
 .PHONY: clean
 clean:
