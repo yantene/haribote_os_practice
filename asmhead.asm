@@ -26,10 +26,6 @@ VRAM    EQU     0x0ff8            ; グラフィックバッファの開始番�
         INT     0x16              ; keyboard BIOS
         MOV     [LEDS], AL
 
-fin:
-        HLT
-        JMP     fin
-
 ; PICが一切の割り込みを受け付けないようにする
         MOV     AL, 0xff
         OUT     0x21, AL
