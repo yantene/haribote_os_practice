@@ -14,12 +14,12 @@ haribote.sys: asmhead.bin bootpack.hrb
 	cat $^ > $@
 
 haribote.img: ipl10.bin haribote.sys
-	mkdir mnt
 	cp $< $@
 	dd count=$$(expr 1474560 - $$(du -b $< | cut -f 1)) bs=1 oflag=append conv=notrunc if=/dev/zero of=$@
-	sudo mount -o loop,fat=12,rw,sync -t msdos $@ mnt/
-	sudo cp $(word 2, $^) mnt/
-	sudo umount mnt/
+	mkdir mnt
+	fusefat -o fsname=FAT12,rw+ $@ mnt/
+	cp $(word 2, $^) mnt/
+	fusermount -u mnt/
 	rmdir mnt
 
 .PHONY: run

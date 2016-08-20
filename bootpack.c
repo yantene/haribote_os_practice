@@ -59,9 +59,8 @@ void init_palette(void){
 }
 
 void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1){
-  int x, y;
-  for(y = y0; y <= y1; ++y){
-    for(x = x0; x <= x1; ++x){
+  for(int y = y0; y <= y1; ++y){
+    for(int x = x0; x <= x1; ++x){
       vram[y * xsize + x] = c;
     }
   }
@@ -69,7 +68,7 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
 }
 
 void HariMain(void) {
-  unsigned char *vram = (char *)0xa0000;
+  unsigned char *vram = (unsigned char *)0xa0000;
   int xsize = 320, ysize = 200;
 
   init_palette(); // パレットを設定
