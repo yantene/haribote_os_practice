@@ -1,8 +1,8 @@
 ipl10.bin: ipl10.nas
-	nasm $< -o $@ -l ipl10.lst
+	nasm $< -o $@
 
 haribote.sys: haribote.nas
-	nasm $< -o $@ -l haribote.lst
+	nasm $< -o $@
 
 haribote.img: ipl10.bin haribote.sys
 	mkdir mnt
@@ -24,4 +24,4 @@ run: haribote.img
 
 .PHONY: clean
 clean:
-	rm -f haribote.img haribote.sys haribote.lst ipl10.bin ipl10.lst
+	rm -f haribote.img haribote.sys ipl10.bin
