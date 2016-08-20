@@ -4,8 +4,11 @@ ipl10.bin: ipl10.asm
 asmhead.bin: asmhead.asm
 	nasm $< -o $@
 
-bootpack.hrb: bootpack.c
-	gcc -march=i486 -m32 -nostdlib -T hrb.ld -o $@ $<
+func.o: func.asm
+	nasm $< -felf32 -o $@
+
+bootpack.hrb: func.o bootpack.c
+	gcc -O2 -march=i486 -m32 -nostdlib -T hrb.ld -o $@ $^
 
 haribote.sys: asmhead.bin bootpack.hrb
 	cat $^ > $@
@@ -30,4 +33,4 @@ run: haribote.img
 
 .PHONY: clean
 clean:
-	rm -f *.{bin,hrb,img,sys}
+	rm -f *.{bin,hrb,img,o,sys}
