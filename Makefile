@@ -1,10 +1,10 @@
-ipl.bin: ipl.nas
-	nasm $< -o $@ -l ipl.lst
+ipl10.bin: ipl10.nas
+	nasm $< -o $@ -l ipl10.lst
 
 haribote.sys: haribote.nas
 	nasm $< -o $@ -l haribote.lst
 
-haribote.img: ipl.bin haribote.sys
+haribote.img: ipl10.bin haribote.sys
 	../z_tools/edimg.exe imgin:../z_tools/fdimg0at.tek\
 		wbinimg src:$< len:512 from:0 to:0\
 		copy from:$(word 2, $^) to:@: \
@@ -21,4 +21,4 @@ run: haribote.img
 
 .PHONY: clean
 clean:
-	rm haribote.sys haribote.lst ipl.bin ipl.lst
+	rm haribote.sys haribote.lst ipl10.bin ipl10.lst
