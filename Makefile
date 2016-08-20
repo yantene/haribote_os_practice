@@ -1,8 +1,14 @@
-ipl10.bin: ipl10.nas
+ipl10.bin: ipl10.asm
 	nasm $< -o $@
 
-haribote.sys: haribote.nas
+asmhead.bin: asmhead.asm
 	nasm $< -o $@
+
+bootpack.hrb: bootpack.c
+	gcc -march=i486 -m32 -nostdlib -T hrb.ld -o $@ $<
+
+haribote.sys: asmhead.bin bootpack.hrb
+	cat $^ > $@
 
 haribote.img: ipl10.bin haribote.sys
 	mkdir mnt
@@ -24,4 +30,4 @@ run: haribote.img
 
 .PHONY: clean
 clean:
-	rm -f haribote.img haribote.sys ipl10.bin
+	rm -f *.{bin,hrb,img,sys}
