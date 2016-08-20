@@ -77,7 +77,7 @@ next:
   JB    readloop      ; CH < CYLS: readloop
 
   MOV   [0x0ff0], CH  ; どこまで読んだかを[0x0ff0]に記録
-  JMP   0xc200        ; haribote.sysを実行
+  JMP   0xc400        ; haribote.sysを実行
 
 error:
   MOV   SI, msg

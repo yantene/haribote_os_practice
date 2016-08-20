@@ -6,7 +6,7 @@ SCRNX EQU   0x0ff4            ; screen x
 SCRNY EQU   0x0ff6            ; screen y
 VRAM  EQU   0x0ff8            ; グラフィックバッファの開始番地
 
-      ORG   0xc200            ; このプログラムの読み込まれる番地
+      ORG   0xc400            ; このプログラムの読み込まれる番地
 
       MOV   AL, 0x13          ; VGAグラフィックス，320x200x8bitカラー
       MOV   AH, 0x00

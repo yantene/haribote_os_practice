@@ -5,10 +5,13 @@ haribote.sys: haribote.nas
 	nasm $< -o $@ -l haribote.lst
 
 haribote.img: ipl10.bin haribote.sys
-	../z_tools/edimg.exe imgin:../z_tools/fdimg0at.tek\
-		wbinimg src:$< len:512 from:0 to:0\
-		copy from:$(word 2, $^) to:@: \
-		imgout:$@
+	mkdir mnt
+	cp $< $@
+	dd count=$$(expr 1474560 - $$(du -b $< | cut -f 1)) bs=1 oflag=append conv=notrunc if=/dev/zero of=$@
+	sudo mount -o loop,fat=12,rw,sync -t msdos $@ mnt/
+	sudo cp $(word 2, $^) mnt/
+	sudo umount mnt/
+	rmdir mnt
 
 .PHONY: run
 run: haribote.img
@@ -21,4 +24,4 @@ run: haribote.img
 
 .PHONY: clean
 clean:
-	rm haribote.sys haribote.lst ipl10.bin ipl10.lst
+	rm -f haribote.img haribote.sys haribote.lst ipl10.bin ipl10.lst
