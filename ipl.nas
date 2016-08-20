@@ -41,15 +41,16 @@ entry:
   MOV   DH, 0         ; ヘッド番号 (表面: 0, 裏面: 1)
   MOV   CL, 2         ; セクタ番号 (360度を18分割で1〜18, 512B)
 
+readloop:
   MOV   SI, 0         ; 失敗回数
 
 retry:
   MOV   AH, 0x02      ; ディスク読み込み
-  MOV   AL, 1         ; 1セクタ
-  MOV   BX, 0
+  MOV   AL, 1         ; 読み込むセクタ数 (制約あり)
+  MOV   BX, 0         ; ES * 16 + BX が読まれるので，BX = 0
   MOV   DL, 0x00      ; ドライブ番号 (A ドライブ)
   INT   0x13          ; ディスクBIOS呼び出し
-  JNC   fin           ; エラーが起きなければfin
+  JNC   next          ; エラーが起きなければnext
   ADD   SI, 1         ; SI += 1
   CMP   SI, 5         ; SI <=> 5
   JAE   error         ; SI >= 5: error
@@ -57,6 +58,14 @@ retry:
   MOV   DL, 0x00      ; A ドライブ
   INT   0x13          ; ドライブリセット
   JMP   retry
+
+next:
+  MOV   AX, ES        ; アドレスを0x200(=0x20*16)すすめる
+  ADD   AX, 0x20
+  MOV   ES, AX
+  ADD   CL, 1         ; CL += 1
+  CMP   CL, 18        ; CL <=> 18
+  JBE   readloop      ; CL <= 18: readloop
 
 ; 寝る
 
