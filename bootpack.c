@@ -1,9 +1,8 @@
 void io_hlt(void);
-void write_mem8(int addr, int data);
 
 void HariMain(void) {
-  for(int i = 0xa0000; i <= 0xaffff; ++i){
-    write_mem8(i, i & 0x0f);
+  for(char *p = (char *)0xa0000; p <= (char *)0xaffff; ++p){
+    *p = (int)p & 0xf;
   }
   while(1){
     io_hlt();
