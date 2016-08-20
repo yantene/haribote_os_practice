@@ -1,5 +1,6 @@
 ; haribote-ipl
 
+  CYLS  EQU 10        ; どこまで読み込むか
   ORG   0x7c00        ; このプログラムがどこから読み込まれるのか
 
 ; 以下は標準的なFAT12フォーマットフロッピーディスクのための記述
@@ -46,8 +47,8 @@ readloop:
 
 retry:
   MOV   AH, 0x02      ; ディスク読み込み
-  MOV   AL, 1         ; 読み込むセクタ数 (制約あり)
-  MOV   BX, 0         ; ES * 16 + BX が読まれるので，BX = 0
+  MOV   AL, 1         ; 読み込むセクタ数 (0x02以上にする場合制約あり)
+  MOV   BX, 0         ; ES * 16 + BX が読まれる
   MOV   DL, 0x00      ; ドライブ番号 (A ドライブ)
   INT   0x13          ; ディスクBIOS呼び出し
   JNC   next          ; エラーが起きなければnext
@@ -63,9 +64,17 @@ next:
   MOV   AX, ES        ; アドレスを0x200(=0x20*16)すすめる
   ADD   AX, 0x20
   MOV   ES, AX
-  ADD   CL, 1         ; CL += 1
-  CMP   CL, 18        ; CL <=> 18
+  ADD   CL, 1         ; CL += 1, セクタ番号を加算
+  CMP   CL, 18
   JBE   readloop      ; CL <= 18: readloop
+  MOV   CL, 1         ; セクタ番号を1に戻す
+  ADD   DH, 1         ; DH += 1, ヘッド番号を加算
+  CMP   DH, 2
+  JB    readloop      ; DH < 2: readloop
+  MOV   DH, 0         ; ヘッド番号を0に戻す
+  ADD   CH, 1         ; CH += 1, シリンダ番号を加算
+  CMP   CH, CYLS
+  JB    readloop      ; CH < CYLS: readloop
 
 ; 寝る
 
