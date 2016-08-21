@@ -87,17 +87,43 @@ void init_screen(unsigned char *vram, int xsize, int ysize){
   return;
 }
 
-void HariMain(void) {
-  short *binfo_scrnx = (short *) 0x0ff4,
-        *binfo_scrny = (short *) 0x0ff6;
-  unsigned char **binfo_vram = (unsigned char **) 0x0ff8;
+void putfont8(unsigned char *vram, int xsize, int x, int y, char c, char *font){
+  for(int i = 0; i < 16; ++i){
+    unsigned char *p = vram + (y + i) * xsize + x;
+    for(int j = 0; j <= 7; ++j){
+      if(font[i] & (0x01 << (7 - j))){
+        p[j] = c;
+      }
+    }
+  }
+  return;
+}
 
-  int xsize = *binfo_scrnx, ysize = *binfo_scrny;
-  unsigned char *vram = *binfo_vram;
+void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, char c, char *s){
+  extern char hankaku[4096];
+  while(*s){
+    putfont8(vram, xsize, x, y, c, hankaku + *s++ * 16);
+    x += 8;
+  }
+  return;
+}
+
+struct BOOTINFO{
+  unsigned char cyls, leds, vmode, reserve;
+  short scrnx, scrny;
+  unsigned char *vram;
+};
+
+void HariMain(void) {
+  struct BOOTINFO *binfo = (struct BOOTINFO *) 0x0ff0;
+  extern char hankaku[4096];
 
   init_palette(); // パレットを設定
+  init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
 
-  init_screen(vram, xsize, ysize);
+  putfonts8_asc(binfo->vram, binfo->scrnx,  8,  8, COL8_FFFFFF, "ABC 123");
+  putfonts8_asc(binfo->vram, binfo->scrnx, 31, 31, COL8_000000, "Haribote OS.");
+  putfonts8_asc(binfo->vram, binfo->scrnx, 30, 30, COL8_FFFFFF, "Haribote OS.");
 
   while(1){
     io_hlt();

@@ -7,7 +7,7 @@ asmhead.bin: asmhead.asm
 func.o: func.asm
 	nasm $< -felf32 -o $@
 
-bootpack.hrb: func.o bootpack.c
+bootpack.hrb: func.o hankaku.c bootpack.c
 	gcc -O3 -std=c11 -march=i486 -m32 -nostdlib -T hrb.ld -o $@ $^
 
 haribote.sys: asmhead.bin bootpack.hrb
