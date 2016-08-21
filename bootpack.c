@@ -67,12 +67,7 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, i
   return;
 }
 
-void HariMain(void) {
-  unsigned char *vram = (unsigned char *)0xa0000;
-  int xsize = 320, ysize = 200;
-
-  init_palette(); // パレットを設定
-
+void init_screen(unsigned char *vram, int xsize, int ysize){
   boxfill8(vram, xsize, COL8_008484,          0,          0, xsize -  1, ysize - 29);
   boxfill8(vram, xsize, COL8_C6C6C6,          0, ysize - 28, xsize -  1, ysize - 28);
   boxfill8(vram, xsize, COL8_FFFFFF,          0, ysize - 27, xsize -  1, ysize - 27);
@@ -89,6 +84,20 @@ void HariMain(void) {
   boxfill8(vram, xsize, COL8_848484, xsize - 47, ysize - 23, xsize - 47, ysize -  4);
   boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize -  3, xsize -  4, ysize -  3);
   boxfill8(vram, xsize, COL8_FFFFFF, xsize -  3, ysize - 24, xsize -  3, ysize -  3);
+  return;
+}
+
+void HariMain(void) {
+  short *binfo_scrnx = (short *) 0x0ff4,
+        *binfo_scrny = (short *) 0x0ff6;
+  unsigned char **binfo_vram = (unsigned char **) 0x0ff8;
+
+  int xsize = *binfo_scrnx, ysize = *binfo_scrny;
+  unsigned char *vram = *binfo_vram;
+
+  init_palette(); // パレットを設定
+
+  init_screen(vram, xsize, ysize);
 
   while(1){
     io_hlt();
